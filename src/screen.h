@@ -44,6 +44,16 @@ typedef struct {
   int     count;
   int     active_idx;         /* which screen is currently displayed */
   int     next_id;            /* auto-incrementing screen ID */
+
+  /* ---- Rename state ---- */
+  int     rename_idx;         /* which tab is being renamed (-1 = none) */
+  char    rename_buf[SCREEN_NAME_LEN];
+
+  /* ---- Drag-and-drop state (WIP) ---- */
+  int     drag_idx;           /* tab being dragged (-1 = none) */
+  int     drag_target;        /* insertion point (-1 = none) */
+  int     drag_start_x;       /* mouse x at drag start */
+  int     dragging;            /* 1 = drag in progress */
 } ScreenManager;
 
 /* ---- Initialize screen manager with one default screen ---- */
@@ -67,5 +77,8 @@ int  screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx);
 
 /* ---- Check if a position passes the active screen's filter ---- */
 int  screen_filter_check(const ScreenFilter *f, const Position *p);
+
+/* ---- Swap two screens (for drag-and-drop reordering) ---- */
+void screen_mgr_swap(ScreenManager *mgr, int a, int b);
 
 #endif

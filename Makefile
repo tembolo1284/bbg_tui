@@ -83,7 +83,7 @@ BIN      := poms
 #  Targets
 # ============================================================================
 
-.PHONY: help build release run run-release clean check_deps
+.PHONY: help build release run run-release valgrind clean check_deps
 
 help: ## Show this help
 	@echo ""
@@ -95,12 +95,25 @@ help: ## Show this help
 	@echo "    make release      Release build (-O2, -march=native, -flto)"
 	@echo "    make run          Build debug and run"
 	@echo "    make run-release  Build release and run"
+	@echo "    make valgrind     Build without ASan and run under valgrind"
 	@echo "    make clean        Remove all build artifacts"
 	@echo "    make help         Show this message"
 	@echo ""
+	@echo "  Keyboard shortcuts:"
+	@echo "    F1-F4             Switch to screen 1-4"
+	@echo "    Ctrl+T            Add new screen"
+	@echo "    Double-click tab  Rename screen"
+	@echo "    Right-click tab   Close screen"
+	@echo ""
 	@echo "  Prerequisites:"
-	@echo "    sudo apt install libsdl2-dev    (Debian/Ubuntu)"
-	@echo "    brew install sdl2               (macOS)"
+	@echo "    sudo apt install libsdl2-dev valgrind  (Debian/Ubuntu)"
+	@echo "    brew install sdl2                      (macOS)"
+	@echo ""
+	@echo "  Copy from rxi/microui into this project:"
+	@echo "    lib/microui.c    (from src/)"
+	@echo "    demo/renderer.h  (from demo/)"
+	@echo "    demo/renderer.c  (from demo/)"
+	@echo "    demo/atlas.inl   (from demo/)"
 	@echo ""
 
 build: CFLAGS  = $(CFLAGS_DEBUG)
@@ -120,6 +133,21 @@ run: build ## Build debug and run
 run-release: release ## Build release and run
 	@echo "[RUN] Starting $(BIN) (release)..."
 	@./$(BIN)
+
+# Valgrind and ASan conflict, so build without sanitizers
+CFLAGS_VALGRIND  := $(CFLAGS_COMMON) -O0 -g3 -DDEBUG
+LDFLAGS_VALGRIND := $(LDFLAGS_COMMON)
+
+valgrind: CFLAGS  = $(CFLAGS_VALGRIND)
+valgrind: LDFLAGS = $(LDFLAGS_VALGRIND)
+valgrind: clean check_deps $(BIN) ## Build without ASan and run under valgrind
+	@echo "[VALGRIND] Starting $(BIN)..."
+	valgrind --leak-check=full          \
+	         --show-leak-kinds=all      \
+	         --track-origins=yes        \
+	         --errors-for-leak-kinds=definite \
+	         --error-exitcode=1         \
+	         ./$(BIN)
 
 # ---- Link ----
 $(BIN): $(ALL_OBJ)

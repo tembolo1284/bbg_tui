@@ -93,16 +93,51 @@ static void process_frame(mu_Context *ctx) {
   mu_end(ctx);
 }
 
-/* ---- Handle F-key Screen Switching ---- */
+/* ---- Handle keyboard shortcuts ---- */
 
-static void handle_fkeys(SDL_Event *e, ScreenManager *mgr) {
+static void handle_keys(SDL_Event *e, ScreenManager *mgr) {
   if (e->type != SDL_KEYDOWN) return;
+
+  SDL_Keymod mod = SDL_GetModState();
+
+  /* Escape — cancel rename */
+  if (e->key.keysym.sym == SDLK_ESCAPE) {
+    mgr->rename_idx = -1;
+    return;
+  }
+
+  /* Don't process shortcuts while renaming a tab */
+  if (mgr->rename_idx >= 0) return;
+
+  /* Ctrl+T — add new screen */
+  if ((mod & KMOD_CTRL) && e->key.keysym.sym == SDLK_t) {
+    if (mgr->count < MAX_SCREENS) {
+      int new_idx = screen_mgr_add(mgr, NULL);
+      if (new_idx >= 0) {
+        mgr->rename_idx = new_idx;
+        snprintf(mgr->rename_buf, SCREEN_NAME_LEN, "%s",
+                 mgr->screens[new_idx].name);
+      }
+    }
+    return;
+  }
+
+  /* Ctrl+W — close active screen */
+  if ((mod & KMOD_CTRL) && e->key.keysym.sym == SDLK_w) {
+    if (mgr->count > 1) {
+      screen_mgr_remove(mgr, mgr->active_idx);
+    }
+    return;
+  }
+
+  /* F1-F4 — switch to screen 1-4 */
   int idx = -1;
   switch (e->key.keysym.sym) {
     case SDLK_F1: idx = 0; break;
     case SDLK_F2: idx = 1; break;
     case SDLK_F3: idx = 2; break;
     case SDLK_F4: idx = 3; break;
+    default: break;
   }
   if (idx >= 0 && idx < mgr->count) {
     mgr->active_idx = idx;
@@ -170,7 +205,7 @@ int main(int argc, char **argv) {
         case SDL_KEYDOWN:
         case SDL_KEYUP: {
           /* F-key screen switching */
-          handle_fkeys(&e, &g_screens);
+          handle_keys(&e, &g_screens);
           /* microui key handling */
           int c = key_map[e.key.keysym.sym & 0xff];
           if (c && e.type == SDL_KEYDOWN) mu_input_keydown(ctx, c);

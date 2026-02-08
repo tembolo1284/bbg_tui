@@ -109,12 +109,6 @@ help: ## Show this help
 	@echo "    sudo apt install libsdl2-dev valgrind  (Debian/Ubuntu)"
 	@echo "    brew install sdl2                      (macOS)"
 	@echo ""
-	@echo "  Copy from rxi/microui into this project:"
-	@echo "    lib/microui.c    (from src/)"
-	@echo "    demo/renderer.h  (from demo/)"
-	@echo "    demo/renderer.c  (from demo/)"
-	@echo "    demo/atlas.inl   (from demo/)"
-	@echo ""
 
 build: CFLAGS  = $(CFLAGS_DEBUG)
 build: LDFLAGS = $(LDFLAGS_DEBUG)
@@ -145,6 +139,7 @@ valgrind: clean check_deps $(BIN) ## Build without ASan and run under valgrind
 	valgrind --leak-check=full          \
 	         --show-leak-kinds=all      \
 	         --track-origins=yes        \
+	         --suppressions=bbg_tui.supp \
 	         --errors-for-leak-kinds=definite \
 	         --error-exitcode=1         \
 	         ./$(BIN)

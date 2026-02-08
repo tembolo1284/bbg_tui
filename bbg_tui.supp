@@ -1,0 +1,306 @@
+# bbg_tui.supp — Valgrind suppressions for system library noise
+#
+# SDL2, Mesa, OpenGL drivers, and glibc's dynamic linker produce
+# thousands of false positives under valgrind. These are not our bugs.
+
+# ---- Dynamic Linker (ld-linux) ----
+{
+   glibc_dl_open
+   Memcheck:Addr8
+   ...
+   fun:_dl_open
+}
+{
+   glibc_dl_map_object
+   Memcheck:Addr8
+   ...
+   fun:_dl_map_object
+}
+{
+   glibc_dl_map_object_deps
+   Memcheck:Addr8
+   ...
+   fun:_dl_map_object_deps
+}
+{
+   glibc_dl_load
+   Memcheck:Addr8
+   ...
+   fun:*dl_load*
+}
+{
+   glibc_dl_catch
+   Memcheck:Addr8
+   ...
+   fun:_dl_catch_exception
+}
+{
+   glibc_dl_open_worker
+   Memcheck:Addr8
+   ...
+   fun:dl_open_worker*
+}
+{
+   glibc_decompose_rpath
+   Memcheck:Addr8
+   ...
+   fun:decompose_rpath
+}
+{
+   glibc_strncmp_dl
+   Memcheck:Addr8
+   fun:strncmp
+   fun:is_dst
+   ...
+}
+
+# ---- Dynamic Linker (Cond) ----
+{
+   glibc_dl_cond
+   Memcheck:Cond
+   ...
+   fun:_dl_*
+}
+{
+   glibc_dl_relocate
+   Memcheck:Cond
+   ...
+   fun:*relocate*
+}
+
+# ---- SDL2 ----
+{
+   sdl_init
+   Memcheck:Leak
+   ...
+   fun:SDL_Init*
+}
+{
+   sdl_video
+   Memcheck:Leak
+   ...
+   fun:SDL_*Video*
+}
+{
+   sdl_gl
+   Memcheck:Leak
+   ...
+   fun:SDL_GL_*
+}
+{
+   sdl_window
+   Memcheck:Leak
+   ...
+   fun:SDL_CreateWindow*
+}
+{
+   sdl_internal
+   Memcheck:Leak
+   ...
+   obj:*libSDL2*
+}
+{
+   sdl_cond
+   Memcheck:Cond
+   ...
+   obj:*libSDL2*
+}
+{
+   sdl_addr
+   Memcheck:Addr8
+   ...
+   obj:*libSDL2*
+}
+{
+   sdl_addr4
+   Memcheck:Addr4
+   ...
+   obj:*libSDL2*
+}
+
+# ---- OpenGL / Mesa / GPU Drivers ----
+{
+   mesa_leak
+   Memcheck:Leak
+   ...
+   obj:*mesa*
+}
+{
+   mesa_leak2
+   Memcheck:Leak
+   ...
+   obj:*Mesa*
+}
+{
+   gl_driver_leak
+   Memcheck:Leak
+   ...
+   obj:*dri*
+}
+{
+   gl_driver_leak2
+   Memcheck:Leak
+   ...
+   obj:*libGL*
+}
+{
+   gl_driver_leak3
+   Memcheck:Leak
+   ...
+   obj:*libGLX*
+}
+{
+   gl_driver_leak4
+   Memcheck:Leak
+   ...
+   obj:*libEGL*
+}
+{
+   nvidia_driver
+   Memcheck:Leak
+   ...
+   obj:*nvidia*
+}
+{
+   nvidia_cond
+   Memcheck:Cond
+   ...
+   obj:*nvidia*
+}
+{
+   gpu_addr8
+   Memcheck:Addr8
+   ...
+   obj:*dri*
+}
+{
+   gpu_cond
+   Memcheck:Cond
+   ...
+   obj:*dri*
+}
+
+# ---- X11 / Wayland ----
+{
+   x11_leak
+   Memcheck:Leak
+   ...
+   obj:*libX11*
+}
+{
+   x11_leak2
+   Memcheck:Leak
+   ...
+   obj:*libxcb*
+}
+{
+   x11_leak3
+   Memcheck:Leak
+   ...
+   obj:*libXext*
+}
+{
+   x11_leak4
+   Memcheck:Leak
+   ...
+   obj:*libXcursor*
+}
+{
+   wayland_leak
+   Memcheck:Leak
+   ...
+   obj:*libwayland*
+}
+{
+   xrandr_leak
+   Memcheck:Leak
+   ...
+   obj:*libXrandr*
+}
+
+# ---- ALSA / PulseAudio (SDL audio init) ----
+{
+   alsa_leak
+   Memcheck:Leak
+   ...
+   obj:*libasound*
+}
+{
+   pulse_leak
+   Memcheck:Leak
+   ...
+   obj:*libpulse*
+}
+
+# ---- glibc internals ----
+{
+   glibc_dlopen_leak
+   Memcheck:Leak
+   ...
+   fun:dlopen*
+}
+{
+   glibc_dlsym
+   Memcheck:Leak
+   ...
+   fun:dlsym
+}
+{
+   glibc_nss
+   Memcheck:Leak
+   ...
+   fun:*nss*
+}
+
+# ---- WSL2 GPU Passthrough (D3D12/DXCore/AMD) ----
+{
+   wsl_dxcore
+   Memcheck:Param
+   ioctl(generic)
+   ...
+   obj:*libdxcore*
+}
+{
+   wsl_d3d12
+   Memcheck:Param
+   ioctl(generic)
+   ...
+   obj:*libd3d12*
+}
+{
+   wsl_amd_driver
+   Memcheck:Param
+   ioctl(generic)
+   ...
+   obj:*amdxc64*
+}
+{
+   wsl_dxcore_leak
+   Memcheck:Leak
+   ...
+   obj:*libdxcore*
+}
+{
+   wsl_d3d12_leak
+   Memcheck:Leak
+   ...
+   obj:*libd3d12*
+}
+{
+   wsl_gpu_driver_leak
+   Memcheck:Leak
+   ...
+   obj:*/wsl/*
+}
+{
+   wsl_gpu_driver_cond
+   Memcheck:Cond
+   ...
+   obj:*/wsl/*
+}
+{
+   wsl_gpu_driver_addr
+   Memcheck:Addr8
+   ...
+   obj:*/wsl/*
+}

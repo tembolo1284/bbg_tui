@@ -85,6 +85,12 @@ static void draw_header(mu_Context *ctx) {
 
 /* ---- Position Row ---- */
 
+/* GCC -Wformat-truncation=2 warns that a double *could* produce 300+ bytes.
+   Our values are bounded financial data and snprintf truncates safely.
+   These are display-only cell strings — truncation is harmless. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+
 static void draw_row(mu_Context *ctx, const Position *p, int row_idx, int tick) {
   char buf[64];
   mu_Color bg = (row_idx % 2 == 0) ? TH_ROW_EVEN : TH_ROW_ODD;
@@ -161,6 +167,8 @@ static void draw_row(mu_Context *ctx, const Position *p, int row_idx, int tick) 
   snprintf(buf, sizeof(buf), "%.3f", p->gamma);
   tbl_cell(ctx, buf, bg, TH_TEXT_DIM, MU_OPT_ALIGNRIGHT);
 }
+
+#pragma GCC diagnostic pop
 
 
 /* ---- Book Group Header ---- */

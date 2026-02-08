@@ -54,7 +54,7 @@ static const char key_map[256] = {
 
 static int text_width_cb(mu_Font font, const char *text, int len) {
   (void)font;
-  if (len == -1) len = strlen(text);
+  if (len == -1) len = (int)strlen(text);
   return r_get_text_width(text, len);
 }
 

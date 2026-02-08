@@ -62,6 +62,11 @@ void tbl_cell_text(mu_Context *ctx, const char *text, mu_Color fg, int opt) {
 }
 
 
+/* fmt is always a compile-time literal from our call sites in poms.c,
+   but gcc can't prove that through a function parameter. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 void tbl_cell_pnl(mu_Context *ctx, double val, const char *fmt,
                    mu_Color bg)
 {
@@ -79,6 +84,8 @@ void tbl_cell_num(mu_Context *ctx, double val, const char *fmt,
   snprintf(buf, sizeof(buf), fmt, val);
   tbl_cell(ctx, buf, bg, fg, MU_OPT_ALIGNRIGHT);
 }
+
+#pragma GCC diagnostic pop
 
 
 void tbl_cell_empty(mu_Context *ctx, mu_Color bg) {

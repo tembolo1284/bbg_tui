@@ -100,7 +100,7 @@ int screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx) {
     /* hover detection using mu_get_id + mu_update_control */
     char id_buf[32];
     snprintf(id_buf, sizeof(id_buf), "!tab_%d", i);
-    mu_Id id = mu_get_id(ctx, id_buf, strlen(id_buf));
+    mu_Id id = mu_get_id(ctx, id_buf, (int)strlen(id_buf));
     mu_update_control(ctx, id, r, 0);
 
     if (ctx->hover == id && !is_active) bg = TH_TAB_HOVER;
@@ -143,7 +143,7 @@ int screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx) {
   {
     mu_Rect r = mu_layout_next(ctx);
     char id_buf[] = "!tab_add";
-    mu_Id id = mu_get_id(ctx, id_buf, strlen(id_buf));
+    mu_Id id = mu_get_id(ctx, id_buf, (int)strlen(id_buf));
     mu_update_control(ctx, id, r, 0);
 
     mu_Color bg = (ctx->hover == id) ? TH_BUTTON_HOVER : TH_BUTTON;
@@ -177,8 +177,8 @@ int screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx) {
 
 static int str_contains_ci(const char *haystack, const char *needle) {
   if (!needle[0]) return 1;
-  int nlen = strlen(needle);
-  int hlen = strlen(haystack);
+  int nlen = (int)strlen(needle);
+  int hlen = (int)strlen(haystack);
   if (nlen > hlen) return 0;
 
   for (int i = 0; i <= hlen - nlen; i++) {

@@ -20,7 +20,8 @@ typedef enum {
   ASSET_CLASS_COUNT
 } AssetClass;
 
-static const char *ASSET_CLASS_NAMES[] = {
+static const char *const ASSET_CLASS_NAMES[ASSET_CLASS_COUNT]
+  __attribute__((unused)) = {
   "Bond", "IRS", "FRA", "Futures", "Swaption"
 };
 

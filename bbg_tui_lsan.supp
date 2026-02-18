@@ -1,0 +1,25 @@
+# bbg_tui_lsan.supp — LeakSanitizer suppressions
+# SDL2, OpenGL, X11 driver allocations that persist until process exit.
+# Valgrind suppressions are in bbg_tui.supp (different format).
+
+leak:__interceptor_aligned_alloc
+leak:__interceptor_realloc
+leak:__interceptor_calloc
+leak:__interceptor_malloc
+leak:SDL_Init
+leak:SDL_GL_CreateContext
+leak:SDL_CreateWindow
+leak:SDL_VideoInit
+leak:libX11.so
+leak:libGLX.so
+leak:libGLX_mesa.so
+leak:libdri
+leak:mesa
+leak:nouveau
+leak:radeon
+leak:intel
+leak:swrast
+leak:libnvidia
+leak:libEGL_nvidia
+leak:libGLX_nvidia
+

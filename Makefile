@@ -122,7 +122,7 @@ release: check_deps $(BIN) ## Release build
 
 run: build ## Build debug and run
 	@echo "[RUN] Starting $(BIN)..."
-	@./$(BIN)
+	@LSAN_OPTIONS=suppressions=bbg_tui_lsan.supp ./$(BIN)
 
 run-release: release ## Build release and run
 	@echo "[RUN] Starting $(BIN) (release)..."

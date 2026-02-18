@@ -5,12 +5,15 @@
 **
 ** Controls:
 **   Tab bar:     Click tabs to switch screens
-**                Right-click a tab to close it
+**                Right-click a tab to close it (with confirmation)
+**                Double-click a tab to rename it
 **                [+] to add a new screen
 **   F1-F4:       Quick switch to screens 1-4
+**   Ctrl+T:      Add new screen
+**   Ctrl+W:      Close active screen
 **   Grid:        Scroll to navigate positions
 **   Filters:     Each screen has independent filters
-**   Window:      Drag title bar, resize from bottom-right corner
+**   Window:      Drag edges/corners to resize
 */
 
 #include <SDL2/SDL.h>
@@ -26,10 +29,16 @@
 #include "screen.h"
 #include "poms.h"
 
+/* ---- Default Window Size ---- */
+#define DEFAULT_WIN_W 1024
+#define DEFAULT_WIN_H 720
+
 /* ---- Global State ---- */
 static PositionBook g_book;
 static ScreenManager g_screens;
 static int g_tick = 0;
+static int g_win_w = DEFAULT_WIN_W;
+static int g_win_h = DEFAULT_WIN_H;
 
 /* ---- Keyboard / Mouse Maps ---- */
 
@@ -69,8 +78,14 @@ static void process_frame(mu_Context *ctx) {
   mu_begin(ctx);
 
   int win_flags = MU_OPT_NOCLOSE;
+
+  /* Size the microui window to fill the SDL window with a small margin */
+  int margin = 5;
+  int mu_w = g_win_w - margin * 2;
+  int mu_h = g_win_h - margin * 2;
+
   if (mu_begin_window_ex(ctx, "POMS - Position Management",
-                         mu_rect(5, 5, 960, 580), win_flags))
+                         mu_rect(margin, margin, mu_w, mu_h), win_flags))
   {
     mu_Container *win = mu_get_current_container(ctx);
     win->rect.w = mu_max(win->rect.w, 800);
@@ -161,7 +176,7 @@ int main(int argc, char **argv) {
 
   /* init SDL + renderer */
   SDL_Init(SDL_INIT_EVERYTHING);
-  r_init();
+  r_init(g_win_w, g_win_h);
 
   /* init microui */
   mu_Context *ctx = malloc(sizeof(mu_Context));
@@ -179,6 +194,14 @@ int main(int argc, char **argv) {
           free(ctx);
           SDL_Quit();
           return 0;
+
+        case SDL_WINDOWEVENT:
+          if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+            g_win_w = e.window.data1;
+            g_win_h = e.window.data2;
+            r_update_size(g_win_w, g_win_h);
+          }
+          break;
 
         case SDL_MOUSEMOTION:
           mu_input_mousemove(ctx, e.motion.x, e.motion.y);

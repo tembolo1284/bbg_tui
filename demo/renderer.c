@@ -18,11 +18,14 @@ static int buf_idx;
 static SDL_Window *window;
 
 
-void r_init(void) {
-  /* init SDL window */
+void r_init(int w, int h) {
+  width  = w;
+  height = h;
+
+  /* init SDL window — resizable */
   window = SDL_CreateWindow(
-    NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    width, height, SDL_WINDOW_OPENGL);
+    "BBG TUI — POMS", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
   SDL_GL_CreateContext(window);
 
   /* init gl */
@@ -45,6 +48,12 @@ void r_init(void) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   assert(glGetError() == 0);
+}
+
+
+void r_update_size(int w, int h) {
+  width  = w;
+  height = h;
 }
 
 

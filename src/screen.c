@@ -4,7 +4,7 @@
 ** Tab features:
 **   Click          → switch to screen
 **   Double-click   → rename screen (inline textbox)
-**   Right-click    → close screen (minimum 1 remains)
+**   Right-click    → close confirmation popup
 **   Drag-and-drop  → reorder tabs
 **   [+] button     → add new screen
 **   Ctrl+T         → add new screen (handled in main.c)
@@ -23,10 +23,11 @@
 
 void screen_mgr_init(ScreenManager *mgr) {
   memset(mgr, 0, sizeof(*mgr));
-  mgr->next_id    = 1;
-  mgr->rename_idx = -1;
-  mgr->drag_idx   = -1;
-  mgr->drag_target = -1;
+  mgr->next_id           = 1;
+  mgr->rename_idx        = -1;
+  mgr->close_confirm_idx = -1;
+  mgr->drag_idx          = -1;
+  mgr->drag_target       = -1;
 
   /* Default screen: show everything */
   screen_mgr_add(mgr, "ALL");
@@ -75,6 +76,10 @@ void screen_mgr_remove(ScreenManager *mgr, int idx) {
   /* Cancel rename if removing the tab being renamed */
   if (mgr->rename_idx == idx) mgr->rename_idx = -1;
   else if (mgr->rename_idx > idx) mgr->rename_idx--;
+
+  /* Adjust close_confirm_idx */
+  if (mgr->close_confirm_idx == idx) mgr->close_confirm_idx = -1;
+  else if (mgr->close_confirm_idx > idx) mgr->close_confirm_idx--;
 
   for (int i = idx; i < mgr->count - 1; i++) {
     mgr->screens[i] = mgr->screens[i + 1];
@@ -165,6 +170,12 @@ int screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx) {
       mu_Rect tb = mu_rect(r.x + 2, r.y + 2, r.w - 4, r.h - 4);
       char rename_id[] = "!tab_rename";
       mu_Id rid = mu_get_id(ctx, rename_id, (int)strlen(rename_id));
+
+      /* Force focus on first frame so user can type immediately */
+      if (ctx->focus != rid) {
+        mu_set_focus(ctx, rid);
+      }
+
       int res = mu_textbox_raw(ctx, mgr->rename_buf, SCREEN_NAME_LEN, rid, tb,
                                MU_OPT_HOLDFOCUS);
 
@@ -222,12 +233,11 @@ int screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx) {
         }
       }
 
-      /* Right-click → close */
+      /* Right-click → open close confirmation popup */
       if (ctx->mouse_pressed == MU_MOUSE_RIGHT && ctx->focus == id && n > 1) {
-        screen_mgr_remove(mgr, i);
-        changed = 1;
+        mgr->close_confirm_idx = i;
+        mu_open_popup(ctx, "!tab_close_confirm");
         s_last_click_tab = -1;
-        break;
       }
     }
 
@@ -335,6 +345,31 @@ int screen_mgr_tab_bar(ScreenManager *mgr, mu_Context *ctx) {
 
   /* spacer */
   mu_layout_next(ctx);
+
+  /* ---- Close Confirmation Popup ---- */
+  if (mgr->close_confirm_idx >= 0) {
+    if (mu_begin_popup(ctx, "!tab_close_confirm")) {
+      mu_layout_row(ctx, 1, (int[]){ 200 }, 0);
+      char msg[96];
+      snprintf(msg, sizeof(msg), "Close \"%s\"?",
+               mgr->screens[mgr->close_confirm_idx].name);
+      mu_label(ctx, msg);
+
+      mu_layout_row(ctx, 2, (int[]){ 60, 60 }, 0);
+      if (mu_button(ctx, "Yes")) {
+        screen_mgr_remove(mgr, mgr->close_confirm_idx);
+        mgr->close_confirm_idx = -1;
+        changed = 1;
+      }
+      if (mu_button(ctx, "Cancel")) {
+        mgr->close_confirm_idx = -1;
+      }
+      mu_end_popup(ctx);
+    } else {
+      /* Popup closed by clicking elsewhere — cancel */
+      mgr->close_confirm_idx = -1;
+    }
+  }
 
   return changed;
 }

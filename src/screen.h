@@ -8,8 +8,11 @@
 ** Navigation:
 **   - Tab bar at top (click to switch)
 **   - [+] button to add a new screen
-**   - [x] on each tab to close (minimum 1 screen)
+**   - Right-click tab → confirmation popup before closing
+**   - Double-click tab → inline rename
 **   - F1-F4 keyboard shortcuts for first 4 screens
+**   - Ctrl+T to add new screen
+**   - Ctrl+W to close active screen
 */
 
 #ifndef SCREEN_H
@@ -48,6 +51,9 @@ typedef struct {
   /* ---- Rename state ---- */
   int     rename_idx;         /* which tab is being renamed (-1 = none) */
   char    rename_buf[SCREEN_NAME_LEN];
+
+  /* ---- Close confirmation state ---- */
+  int     close_confirm_idx;  /* tab pending close confirmation (-1 = none) */
 
   /* ---- Drag-and-drop state (WIP) ---- */
   int     drag_idx;           /* tab being dragged (-1 = none) */

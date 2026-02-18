@@ -84,12 +84,18 @@ static void process_frame(mu_Context *ctx) {
   int mu_w = g_win_w - margin * 2;
   int mu_h = g_win_h - margin * 2;
 
+  /* Force container rect to track SDL window size every frame.
+  ** mu_begin_window_ex only uses the rect as initial default;
+  ** after that microui caches the container's rect. We override it. */
+  mu_Container *win = mu_get_container(ctx, "POMS - Position Management");
+  if (win) {
+    win->rect = mu_rect(margin, margin, mu_w, mu_h);
+  }
+
   if (mu_begin_window_ex(ctx, "POMS - Position Management",
                          mu_rect(margin, margin, mu_w, mu_h), win_flags))
   {
-    mu_Container *win = mu_get_current_container(ctx);
-    win->rect.w = mu_max(win->rect.w, 800);
-    win->rect.h = mu_max(win->rect.h, 300);
+    win = mu_get_current_container(ctx);
 
     /* ---- Tab Bar ---- */
     screen_mgr_tab_bar(&g_screens, ctx);
